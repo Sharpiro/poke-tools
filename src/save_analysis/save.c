@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <stdbool.h>
-#include "types.h"
-#include "constants.h"
+#include "../types.h"
+#include "../constants.h"
+#include "save.h"
 
 struct SaveBlockTwo
 {
@@ -11,24 +10,26 @@ struct SaveBlockTwo
   u8 the_rest[SECTOR_DATA_SIZE - 8];
 };
 
-// struct __attribute__((__packed__)) Sector
-struct Sector
+struct SaveData *load_save(const char *filename)
 {
-  u8 data[SECTOR_DATA_SIZE];
-  u8 unused[SECTOR_FOOTER_SIZE - 12];
-  u16 id;
-  u16 checksum;
-  u32 signature;
-  u32 counter;
-};
+  FILE *file;
+  file = fopen(filename, "r");
+  fseek(file, 0, SEEK_END);
+  long file_len = ftell(file);
+  fseek(file, 0, SEEK_SET);
+  u8 *buffer = malloc(file_len);
+  int read_result = fread(buffer, file_len, 1, file);
+  fclose(file);
+  if (read_result != 1)
+  {
+    exit(1);
+  }
 
-// struct __attribute__((__packed__)) Something
-struct SaveData
-{
-  struct Sector sectors[SECTOR_COUNT * 2];
-};
+  struct SaveData *save_data = (struct SaveData *)buffer;
+  return save_data;
+}
 
-void do_something(struct SaveData *save_data)
+void analyze_save(struct SaveData *save_data)
 {
   // todo: how to create var that is a pointer to array of Sector
   // GROSE
@@ -57,30 +58,4 @@ void do_something(struct SaveData *save_data)
       int x = 2;
     }
   }
-}
-
-int main()
-{
-  FILE *file;
-  file = fopen("pokefirered.sav", "r");
-  // file = fopen("fake.sav", "r");
-  // file = fopen("fake_short.sav", "r");
-  fseek(file, 0, SEEK_END);
-  // int temp_no = fileno(file);
-  // int temp = fstat(temp_no, &file_stat);
-  long file_len = ftell(file);
-  fseek(file, 0, SEEK_SET);
-  u8 *buffer = malloc(file_len);
-  int read_result = fread(buffer, file_len, 1, file);
-  if (read_result != 1)
-  {
-    return 1;
-  }
-
-  struct SaveData *save_data = (struct SaveData *)buffer;
-  do_something(save_data);
-
-  free(buffer);
-  fclose(file);
-  puts("done");
 }

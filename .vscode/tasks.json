@@ -7,16 +7,16 @@
       "args": [
         "-fdiagnostics-color=always",
         "-g",
-        "${file}",
+        "src/main.c",
+        "src/save_analysis/save.c",
+        "src/rom_analysis/rom.c",
         "-o",
-        "${fileDirname}/${fileBasenameNoExtension}"
+        "poke-tools"
       ],
       "options": {
-        "cwd": "${fileDirname}"
+        "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": [
-        "$gcc"
-      ],
+      "problemMatcher": ["$gcc"],
       "group": {
         "kind": "build",
         "isDefault": true

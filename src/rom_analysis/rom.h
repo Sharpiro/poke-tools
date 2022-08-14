@@ -1,3 +1,5 @@
+#pragma once
+
 #define ROM_SIZE (1 << 24)
 
 #define BASE_STATS_LOCATION 0x2549b8
@@ -43,6 +45,13 @@ struct RomData
   u8 post_data[ROM_SIZE - BASE_STATS_LOCATION - POKEMON_COUNT * sizeof(struct BaseStats)];
 };
 
+struct Pokemon
+{
+  u16 species_id;
+  struct BaseStats *base_stats;
+};
+
+// extern "C" struct RomData *load_rom(const char *filename);
 struct RomData *load_rom(const char *filename);
 
 void analyze_rom(struct RomData *save_data);

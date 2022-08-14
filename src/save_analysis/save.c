@@ -51,7 +51,7 @@ void analyze_save(struct SaveData *save_data)
   for (int i = start_index; i < end_index; i++)
   {
     struct Sector *current_sector = &save_data->sectors[i];
-    printf("i: %d, id: %d, counter:%d\n", i, current_sector->id, current_sector->counter);
+    // printf("i: %d, id: %d, counter:%d\n", i, current_sector->id, current_sector->counter);
     if (current_sector->id == 0)
     {
       save_block_two = (struct SaveBlockTwo *)&current_sector->data;

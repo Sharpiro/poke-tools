@@ -3,3 +3,5 @@
 *.gba
 .vscode/settings.json
 poke-tools
+*.o
+build

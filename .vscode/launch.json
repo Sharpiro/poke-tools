@@ -25,7 +25,8 @@
         },
         { "text": "set output-radix 16", "ignoreFailures": true }
       ],
-      "preLaunchTask": "C/C++: gcc build active file",
+      // "preLaunchTask": "C/C++: gcc build active file",
+      "preLaunchTask": "build",
       "miDebuggerPath": "/usr/bin/gdb"
     }
   ]

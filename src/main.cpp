@@ -4,8 +4,11 @@
 #include <unistd.h>
 #include "types.h"
 #include "constants.h"
-#include "save_analysis/save.hpp"
 #include "rom_analysis/rom.h"
+extern "C"
+{
+#include "save_analysis/save.h"
+}
 
 int main()
 {

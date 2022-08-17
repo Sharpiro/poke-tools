@@ -16,3 +16,7 @@ struct SaveData
 {
   struct Sector sectors[SECTOR_COUNT * 2];
 };
+
+struct SaveData *load_save(const char *filename);
+
+void analyze_save(struct SaveData *save_data);

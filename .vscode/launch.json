@@ -2,6 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "deno debug file",
+      "request": "launch",
+      "type": "node",
+      "program": "${file}",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "/home/sharpiro/.deno/bin/deno",
+      "runtimeArgs": ["run", "--inspect-brk", "--allow-all"],
+      "attachSimplePort": 9229
+    },
+    {
       "name": "C/C++: gcc build and debug active file",
       "type": "cppdbg",
       "request": "launch",

@@ -3,7 +3,9 @@
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
 const symbols = new Set([
-    ";"
+    ";",
+    "[",
+    "]"
 ]);
 function lexTokens(code) {
     const tokens = [];
@@ -52,78 +54,89 @@ function removeWhitespace(data) {
     const newData = data.slice(j);
     return newData;
 }
-function assert(condition) {
+function assertDefined(condition) {
     if (!condition) {
         throw new Error();
     }
 }
-function assertEqual(left, right) {
-    if (left !== right) {
-        throw new Error(`'${left}' !== '${right}'`);
+function assertNumber(num) {
+    if (isNaN(num)) {
+        throw new Error("invalid number");
     }
 }
-function parseField(tokens) {
-    const type = tokens[0];
-    assert(type);
-    tokens = tokens.slice(1);
-    const identifier = tokens[0];
-    assert(identifier);
-    tokens = tokens.slice(1);
-    assertEqual(tokens[0], ";");
-    tokens = tokens.slice(1);
-    return {
-        field: {
-            type,
-            identifier
-        },
-        tokens
-    };
+function assertEqual(actual, expected) {
+    if (actual !== expected) {
+        throw new Error(`'${actual}' !== '${expected}'`);
+    }
 }
-function parseStructBody(tokens) {
-    assertEqual(tokens[0], "{");
-    tokens = tokens.slice(1);
-    let fieldOne;
-    ({ field: fieldOne , tokens  } = parseField(tokens));
-    let fieldTwo;
-    ({ field: fieldTwo , tokens  } = parseField(tokens));
-    let fieldThree;
-    ({ field: fieldThree , tokens  } = parseField(tokens));
-    let fieldFour;
-    ({ field: fieldFour , tokens  } = parseField(tokens));
-    let fieldFive;
-    ({ field: fieldFive , tokens  } = parseField(tokens));
-    assertEqual(tokens[0], "}");
-    tokens = tokens.slice(1);
-    return {
-        fields: [
-            fieldOne,
-            fieldTwo,
-            fieldThree,
-            fieldFour,
-            fieldFive
-        ],
-        struct: tokens
-    };
-}
-function parseStruct(tokens) {
-    const type = tokens[0];
-    assertEqual(type, "struct");
-    tokens = tokens.slice(1);
-    const structName = tokens[0];
-    assertEqual(structName, "Temp");
-    tokens = tokens.slice(1);
-    let fields;
-    ({ fields , struct: tokens  } = parseStructBody(tokens));
+function parseField(context) {
+    const { tokens , constants  } = context;
+    const type = nextToken(tokens);
+    assertDefined(type);
+    const identifier = nextToken(tokens);
+    assertDefined(identifier);
+    const peek = peekToken(tokens);
+    let arraySize;
+    if (peek === ";") {
+        assertEqual(nextToken(tokens), ";");
+    } else {
+        assertEqual(nextToken(tokens), "[");
+        const arraySizeToken = nextToken(tokens);
+        assertDefined(arraySizeToken);
+        const constantValue = constants.get(arraySizeToken);
+        if (constantValue !== undefined) {
+            arraySize = constantValue;
+        } else {
+            arraySize = Number(arraySizeToken);
+        }
+        assertNumber(arraySize);
+        assertEqual(nextToken(tokens), "]");
+        assertEqual(nextToken(tokens), ";");
+    }
     return {
         type,
-        identifier: structName,
+        identifier,
+        arraySize
+    };
+}
+function parseStructBody(context) {
+    const tokens = context.tokens;
+    assertEqual(nextToken(tokens), "{");
+    const fields = [];
+    while(peekToken(tokens) !== "}"){
+        const field = parseField(context);
+        fields.push(field);
+    }
+    assertEqual(nextToken(tokens), "}");
+    return fields;
+}
+function nextToken(tokens) {
+    return tokens.shift();
+}
+function peekToken(tokens) {
+    return tokens.at(0);
+}
+function parseStruct(context) {
+    const { tokens  } = context;
+    const type = nextToken(tokens);
+    assertEqual(type, "struct");
+    let identifier = nextToken(tokens);
+    assertDefined(identifier);
+    const fields = parseStructBody(context);
+    return {
+        type,
+        identifier,
         fields
     };
 }
-function parseStruct1(code) {
+function parseStruct1(code, constants) {
     const tokens = lexTokens(code);
     console.log(tokens);
-    const structInfo = parseStruct(tokens);
+    constants = constants ?? new Map();
+    const structInfo = parseStruct({
+        tokens: tokens.slice(),
+        constants
+    });
     console.log(structInfo);
     return structInfo;
 }

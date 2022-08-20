@@ -1,7 +1,8 @@
-const symbols = new Set([";"]);
+const symbols = new Set([";", "[", "]"]);
 
 export function lexTokens(code: string) {
   const tokens: string[] = [];
+  code = removeWhitespace(code);
   while (code) {
     let token: string;
     ({ token, newData: code } = lexToken(code));

@@ -1,81 +1,111 @@
-function assert(condition: any) {
+function assertDefined(condition: any): asserts condition {
   if (!condition) {
     throw new Error();
   }
 }
 
-function assertEqual(left: any, right: any) {
-  if (left !== right) {
-    throw new Error(`'${left}' !== '${right}'`);
+// function assertNumber(num: number) {
+//   if (isNaN(num)) {
+//     throw new Error("invalid number");
+//   }
+// }
+
+function assertEqual(actual: any, expected: any): asserts actual {
+  if (actual !== expected) {
+    throw new Error(`'${actual}' !== '${expected}'`);
   }
 }
 
-// function popToken(tokens: string[]) {
-//   // tokens.shift
-//   return tokens.slice();
-// }
+function parseField(context: ParseContext) {
+  const { tokens, constants } = context;
+  const type = nextToken(tokens);
+  assertDefined(type);
 
-function parseField(tokens: string[]) {
-  // let type: string;
-  // ({ token: type, newData: tokens } = parseToken(tokens));
-  const type = tokens[0];
-  assert(type);
-  // tokens = parseWhitespace(tokens);
-  tokens = tokens.slice(1);
+  const identifier = nextToken(tokens);
+  assertDefined(identifier);
 
-  // ({ token: identifier, newData: tokens } = parseToken(tokens));
-  const identifier = tokens[0];
-  assert(identifier);
-  tokens = tokens.slice(1);
-
-  assertEqual(tokens[0], ";");
-  tokens = tokens.slice(1);
-  return { field: { type, identifier }, tokens };
+  const peek = peekToken(tokens);
+  let arraySize: string | undefined;
+  if (peek === ";") {
+    assertEqual(nextToken(tokens), ";");
+  } else {
+    assertEqual(nextToken(tokens), "[");
+    arraySize = nextToken(tokens);
+    assertDefined(arraySize);
+    // const arraySizeToken = nextToken(tokens);
+    // const constantValue = constants.get(arraySizeToken);
+    // if (constantValue !== undefined) {
+    //   arraySize = constantValue;
+    // } else {
+    //   arraySize = Number(arraySizeToken);
+    // }
+    // if (isNaN(arraySize)) {
+    //   throw new Error(`invalid number or constant: '${arraySizeToken}'`);
+    // }
+    assertEqual(nextToken(tokens), "]");
+    assertEqual(nextToken(tokens), ";");
+  }
+  return { type, identifier, arraySize };
 }
 
-function parseStructBody(tokens: string[]) {
-  // ({ token, newData: tokens } = parseToken(tokens));
-  assertEqual(tokens[0], "{");
-  tokens = tokens.slice(1);
+function parseStructBody(context: ParseContext) {
+  const tokens = context.tokens;
+  assertEqual(nextToken(tokens), "{");
 
-  // parse 0 or more fields
-  let fieldOne: any;
-  ({ field: fieldOne, tokens } = parseField(tokens));
-  let fieldTwo: any;
-  ({ field: fieldTwo, tokens } = parseField(tokens));
-  let fieldThree: any;
-  ({ field: fieldThree, tokens } = parseField(tokens));
-  let fieldFour: any;
-  ({ field: fieldFour, tokens } = parseField(tokens));
-  let fieldFive: any;
-  ({ field: fieldFive, tokens } = parseField(tokens));
+  const fields = [];
+  while (peekToken(tokens) !== "}") {
+    const field = parseField(context);
+    fields.push(field);
+  }
+  assertEqual(nextToken(tokens), "}");
 
-  // ({ token, newData: tokens } = parseToken(tokens));
-  assertEqual(tokens[0], "}");
-  tokens = tokens.slice(1);
-  // tokens = parseWhitespace(tokens);
-
-  return {
-    fields: [fieldOne, fieldTwo, fieldThree, fieldFour, fieldFive],
-    struct: tokens,
-  };
+  return fields;
 }
 
-export function parseStruct(tokens: string[]) {
-  // let type: string;
-  // ({ token: type, newData: tokens } = parseToken(tokens));
-  const type = tokens[0];
+function nextToken(tokens: string[]) {
+  return tokens.shift();
+}
+
+function peekToken(tokens: string[]) {
+  return tokens.at(0);
+}
+
+export function parseStruct(context: ParseContext): StructInfo {
+  const { tokens } = context;
+  const type = nextToken(tokens);
   assertEqual(type, "struct");
-  // tokens = parseWhitespace(tokens);
-  tokens = tokens.slice(1);
 
-  // ({ token: structName, newData: tokens } = parseToken(tokens));
-  const structName = tokens[0];
-  assertEqual(structName, "Temp");
-  tokens = tokens.slice(1);
-  // tokens = parseWhitespace(tokens);
+  let identifier = nextToken(tokens);
+  assertDefined(identifier);
 
-  let fields: unknown[];
-  ({ fields, struct: tokens } = parseStructBody(tokens));
-  return { type, identifier: structName, fields };
+  const fields = parseStructBody(context);
+  assertEqual(nextToken(tokens), ";");
+
+  return { type, identifier, fields };
 }
+
+export function parseStructs(context: ParseContext) {
+  const tokens = context.tokens;
+  const structs = [];
+
+  while (peekToken(tokens) === "struct") {
+    const struct = parseStruct(context);
+    structs.push(struct);
+  }
+  return structs;
+}
+
+export type ParseContext = {
+  tokens: string[];
+  constants: Map<string, number>;
+};
+
+export type StructInfo = {
+  type: string;
+  identifier: string;
+  fields: {
+    type: string;
+    identifier: string;
+    arraySize: string | undefined;
+  }[];
+};

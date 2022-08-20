@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export function useEventOnce(func: Function) {
+export function useOnMount(func: Function) {
   const funcRef = useRef(func);
   const runRef = useRef(false);
 

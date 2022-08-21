@@ -1,31 +1,46 @@
 import { assertEquals } from "https://deno.land/std@0.152.0/testing/asserts.ts";
-import { analyze } from "./analyze.ts";
-import { parseStruct } from "./mod.ts";
+import { getAnalyzedStruct, getAnalyzedStructs } from "./analyze.ts";
+import { lexTokens } from "./lex.ts";
+import { parseStruct, parseStructs } from "./parse.ts";
 
-Deno.test("primitive types", () => {
-  const tempStructRaw = `struct Temp
+Deno.test("builtin types", () => {
+  const structRaw = `struct Temp
 {
+  u8 z[1];
+  u8 y[2];
+  u8 x[X_SIZE];
   bool a;
   u8 b;
   u16 c;
   u32 d;
 };`;
 
-  const tempStruct = parseStruct(tempStructRaw);
-  const structSize = analyze([tempStruct]);
-  assertEquals(structSize, 8);
+  const tokens = lexTokens(structRaw);
+  const parsedStruct = parseStruct(tokens);
+  const analyzedStruct = getAnalyzedStruct(
+    parsedStruct,
+    new Map([["X_SIZE", 99]]),
+    new Map(),
+  );
+  console.log(analyzedStruct);
+  // assertEquals(structSize, 8);
 });
 
-// Deno.test("multiple structs", () => {
-//   const tempStructRaw = `struct Temp
-// {
-//   bool a;
-//   u8 b;
-//   u16 c;
-//   u32 d;
-// };`;
+Deno.test("multiple structs", () => {
+  const structsRaw = `
+struct Temp
+{
+  bool a;
+};
 
-//   const tempStruct = parseStruct(tempStructRaw);
-//   const structSize = getStructSize(tempStruct);
-//   assertEquals(structSize, 8);
-// });
+struct Container
+{
+  Temp temp;
+};
+`;
+
+  const tokens = lexTokens(structsRaw);
+  const parsedStructs = parseStructs(tokens);
+  const analyzedStructs = getAnalyzedStructs(parsedStructs, new Map());
+  console.log(analyzedStructs);
+});

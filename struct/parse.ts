@@ -4,20 +4,13 @@ function assertDefined(condition: any): asserts condition {
   }
 }
 
-// function assertNumber(num: number) {
-//   if (isNaN(num)) {
-//     throw new Error("invalid number");
-//   }
-// }
-
 function assertEqual(actual: any, expected: any): asserts actual {
   if (actual !== expected) {
     throw new Error(`'${actual}' !== '${expected}'`);
   }
 }
 
-function parseField(context: ParseContext) {
-  const { tokens, constants } = context;
+function parseField(tokens: string[]) {
   const type = nextToken(tokens);
   assertDefined(type);
 
@@ -32,29 +25,18 @@ function parseField(context: ParseContext) {
     assertEqual(nextToken(tokens), "[");
     arraySize = nextToken(tokens);
     assertDefined(arraySize);
-    // const arraySizeToken = nextToken(tokens);
-    // const constantValue = constants.get(arraySizeToken);
-    // if (constantValue !== undefined) {
-    //   arraySize = constantValue;
-    // } else {
-    //   arraySize = Number(arraySizeToken);
-    // }
-    // if (isNaN(arraySize)) {
-    //   throw new Error(`invalid number or constant: '${arraySizeToken}'`);
-    // }
     assertEqual(nextToken(tokens), "]");
     assertEqual(nextToken(tokens), ";");
   }
   return { type, identifier, arraySize };
 }
 
-function parseStructBody(context: ParseContext) {
-  const tokens = context.tokens;
+function parseStructBody(tokens: string[]) {
   assertEqual(nextToken(tokens), "{");
 
   const fields = [];
   while (peekToken(tokens) !== "}") {
-    const field = parseField(context);
+    const field = parseField(tokens);
     fields.push(field);
   }
   assertEqual(nextToken(tokens), "}");
@@ -70,26 +52,24 @@ function peekToken(tokens: string[]) {
   return tokens.at(0);
 }
 
-export function parseStruct(context: ParseContext): StructInfo {
-  const { tokens } = context;
+export function parseStruct(tokens: string[]): ParsedStruct {
   const type = nextToken(tokens);
   assertEqual(type, "struct");
 
   let identifier = nextToken(tokens);
   assertDefined(identifier);
 
-  const fields = parseStructBody(context);
+  const fields = parseStructBody(tokens);
   assertEqual(nextToken(tokens), ";");
 
-  return { type, identifier, fields };
+  return { identifier, fields };
 }
 
-export function parseStructs(context: ParseContext) {
-  const tokens = context.tokens;
+export function parseStructs(tokens: string[]) {
   const structs = [];
 
   while (peekToken(tokens) === "struct") {
-    const struct = parseStruct(context);
+    const struct = parseStruct(tokens);
     structs.push(struct);
   }
   return structs;
@@ -100,8 +80,7 @@ export type ParseContext = {
   constants: Map<string, number>;
 };
 
-export type StructInfo = {
-  type: string;
+export type ParsedStruct = {
   identifier: string;
   fields: {
     type: string;

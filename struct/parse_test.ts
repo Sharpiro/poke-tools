@@ -1,16 +1,8 @@
-import { parseStruct } from "./mod.ts";
-
-// u8 f : 4;
-// u8 g : 4;
-// u32 e[5];
-
-// const tokens = lexTokens(testStruct);
-// console.log(tokens);
-// const structInfo = parseStruct(tokens);
-// console.log(structInfo);
+import { lexTokens } from "./lex.ts";
+import { parseStruct } from "./parse.ts";
 
 Deno.test("primitive types", () => {
-  const testStruct = `struct Temp
+  const structRaw = `struct Temp
 {
   bool a;
   u8 b;
@@ -18,40 +10,44 @@ Deno.test("primitive types", () => {
   u32 d;
 };`;
 
-  const _result = parseStruct(testStruct);
+  const tokens = lexTokens(structRaw);
+  const _result = parseStruct(tokens);
 });
 
 Deno.test("array", () => {
-  const testStruct = `struct Temp
+  const structRaw = `struct Temp
 {
   u8 a[50];
 };`;
 
-  const _result = parseStruct(testStruct);
+  const tokens = lexTokens(structRaw);
+  const _result = parseStruct(tokens);
 });
 
 Deno.test("array size const var", () => {
-  const testStruct = `struct Temp
+  const structRaw = `struct Temp
 {
   u8 b[SIZE];
 };`;
 
-  const _result = parseStruct(testStruct);
+  const tokens = lexTokens(structRaw);
+  const _result = parseStruct(tokens);
 });
 
 Deno.test("primitive and array", () => {
-  const testStruct = `struct Temp
+  const structRaw = `struct Temp
 {
   bool a;
   u8 b[50];
   u16 c;
 };`;
 
-  const _result = parseStruct(testStruct);
+  const tokens = lexTokens(structRaw);
+  const _result = parseStruct(tokens);
 });
 
 Deno.test("sector struct", () => {
-  const testStruct = `struct Sector
+  const structRaw = `struct Sector
 {
   u8 data[SECTOR_DATA_SIZE];
   u8 unused[SECTOR_UNUSED];
@@ -61,26 +57,6 @@ Deno.test("sector struct", () => {
   u32 counter;
 };`;
 
-  const _result = parseStruct(
-    testStruct,
-    new Map([
-      ["SECTOR_DATA_SIZE", 5],
-      ["SECTOR_UNUSED", 10],
-    ])
-  );
+  const tokens = lexTokens(structRaw);
+  const _result = parseStruct(tokens);
 });
-
-// Deno.test("multiple structs", () => {
-//   const tempStruct = `struct Temp
-// {
-//   u8 a;
-// };`;
-
-//   const ownerStruct = `struct Owner
-// {
-//   Temp temp;
-// };`;
-
-//   const tempStructParsed = parseStruct(tempStruct);
-//   const ownerStructParsed = parseStruct(ownerStruct);
-// });

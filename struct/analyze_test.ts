@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.152.0/testing/asserts.ts";
-import { getAnalyzedStruct, getAnalyzedStructs } from "./analyze.ts";
+import { analyzeStruct, analyzeStructs } from "./analyze.ts";
 import { lexTokens } from "./lex.ts";
 import { parseStruct, parseStructs } from "./parse.ts";
 
@@ -17,7 +17,7 @@ Deno.test("builtin types", () => {
 
   const tokens = lexTokens(structRaw);
   const parsedStruct = parseStruct(tokens);
-  const analyzedStruct = getAnalyzedStruct(
+  const analyzedStruct = analyzeStruct(
     parsedStruct,
     new Map([["X_SIZE", 99]]),
     new Map(),
@@ -41,6 +41,6 @@ struct Container
 
   const tokens = lexTokens(structsRaw);
   const parsedStructs = parseStructs(tokens);
-  const analyzedStructs = getAnalyzedStructs(parsedStructs, new Map());
+  const analyzedStructs = analyzeStructs(parsedStructs, new Map());
   console.log(analyzedStructs);
 });

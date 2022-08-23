@@ -1,17 +1,10 @@
-function assertDefined(condition: any): asserts condition {
-  if (!condition) {
-    throw new Error();
-  }
-}
-
-function assertEqual(actual: any, expected: any): asserts actual {
-  if (actual !== expected) {
-    throw new Error(`'${actual}' !== '${expected}'`);
-  }
-}
+import { assertDefined, assertEqual } from "./tools.ts";
 
 function parseField(tokens: string[]) {
-  const type = nextToken(tokens);
+  const typeOrStructKeyword = nextToken(tokens);
+  const type = typeOrStructKeyword === "struct"
+    ? nextToken(tokens)
+    : typeOrStructKeyword;
   assertDefined(type);
 
   const identifier = nextToken(tokens);

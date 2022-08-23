@@ -1,5 +1,6 @@
 import { lexTokens } from "./lex.ts";
-import { parseStruct } from "./parse.ts";
+import { preProcess } from "./macro.ts";
+import { parseStruct, parseStructs } from "./parse.ts";
 
 Deno.test("primitive types", () => {
   const structRaw = `struct Temp
@@ -59,4 +60,62 @@ Deno.test("sector struct", () => {
 
   const tokens = lexTokens(structRaw);
   const _result = parseStruct(tokens);
+});
+
+Deno.test("multiple structs", () => {
+  const structsRaw = `
+struct Temp
+{
+  bool a;
+};
+
+struct Container
+{
+  Temp temp;
+};
+
+struct C_Container
+{
+  struct Temp temp;
+};
+`;
+
+  const tokens = lexTokens(structsRaw);
+  const parsedStructs = parseStructs(tokens);
+  console.log(parsedStructs);
+});
+
+Deno.test("ignore comments", () => {
+  const structsRaw = `
+struct Temp
+{
+  // bool a;
+  // int a;
+  bool a;
+  z a;
+};
+`;
+
+  const tokens = lexTokens(structsRaw);
+  console.log(tokens);
+});
+
+Deno.test("define macro", () => {
+  // const source = `#define ARRAY_SIZE 9`;
+  const source = `
+  #define ARRAY_SIZE 9
+  // #define FAV_NUMBER 8
+
+  struct Temp
+  {
+    // bool a;
+    // int a;
+    bool a[ARRAY_SIZE];
+  };
+  `;
+
+  const macroSource = preProcess(source);
+  console.log(macroSource);
+  // const tokens = lexTokens(macroSource);
+  // console.log(tokens);
 });

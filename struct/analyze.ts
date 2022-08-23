@@ -1,13 +1,13 @@
 import { ParsedStruct } from "./parse.ts";
 
 const primitives = new Map<string, PrimitiveType>([
-  ["bool", { name: "bool", size: 8, isPrimitive: true }],
-  ["u8", { name: "u8", size: 8, isPrimitive: true }],
-  ["u16", { name: "u16", size: 16, isPrimitive: true }],
-  ["u32", { name: "u32", size: 32, isPrimitive: true }],
+  ["bool", { identifier: "bool", size: 8, isPrimitive: true }],
+  ["u8", { identifier: "u8", size: 8, isPrimitive: true }],
+  ["u16", { identifier: "u16", size: 16, isPrimitive: true }],
+  ["u32", { identifier: "u32", size: 32, isPrimitive: true }],
 ]);
 
-export function getAnalyzedStructs(
+export function analyzeStructs(
   parsedStructs: ParsedStruct[],
   constants: Map<string, number>,
 ) {
@@ -16,7 +16,7 @@ export function getAnalyzedStructs(
     const analyzedStructMap = new Map(
       analyzedStructs.map((s) => [s.identifier, s]),
     );
-    const analyzedStruct = getAnalyzedStruct(
+    const analyzedStruct = analyzeStruct(
       parsedStruct,
       constants,
       analyzedStructMap,
@@ -26,7 +26,7 @@ export function getAnalyzedStructs(
   return analyzedStructs;
 }
 
-export function getAnalyzedStruct(
+export function analyzeStruct(
   parsedStruct: ParsedStruct,
   constants: Map<string, number>,
   analyzedStructs: Map<string, AnalyzedStruct>,
@@ -62,6 +62,7 @@ export function getAnalyzedStruct(
 
     const field = {
       type: fieldType,
+      typeIdentifier: fieldType.identifier,
       identifier: parsedField.identifier,
       arraySize,
     };
@@ -76,10 +77,15 @@ export function getAnalyzedStruct(
   return analyzedStruct;
 }
 
-export type PrimitiveType = { name: string; size: number; isPrimitive: true };
+export type PrimitiveType = {
+  identifier: string;
+  size: number;
+  isPrimitive: true;
+};
 
 export type AnalyzedField = {
   type: PrimitiveType | AnalyzedStruct;
+  typeIdentifier: string;
   identifier: string;
   arraySize: number | undefined;
 };

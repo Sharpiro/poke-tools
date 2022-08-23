@@ -11,10 +11,9 @@ struct Sector
   u32 counter;
 };
 
-// struct __attribute__((__packed__)) Something
 struct SaveData
 {
-  struct Sector sectors[SECTOR_COUNT * 2];
+  struct Sector sectors[ALL_SECTOR_COUNT];
 };
 
 struct SaveData *load_save(const char *filename);

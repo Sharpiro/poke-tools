@@ -1,67 +1,68 @@
+import { Token } from "./lex.ts";
 import { assertDefined, assertEqual } from "./tools.ts";
 
-function parseField(tokens: string[]) {
-  const typeOrStructKeyword = nextToken(tokens);
+function parseField(tokens: Token[]) {
+  const typeOrStructKeyword = nextToken(tokens)?.value;
   const type = typeOrStructKeyword === "struct"
-    ? nextToken(tokens)
+    ? nextToken(tokens)?.value
     : typeOrStructKeyword;
   assertDefined(type);
 
-  const identifier = nextToken(tokens);
+  const identifier = nextToken(tokens)?.value;
   assertDefined(identifier);
 
-  const peek = peekToken(tokens);
+  const peek = peekToken(tokens)?.value;
   let arraySize: string | undefined;
   if (peek === ";") {
-    assertEqual(nextToken(tokens), ";");
+    assertEqual(nextToken(tokens)?.value, ";");
   } else {
-    assertEqual(nextToken(tokens), "[");
-    arraySize = nextToken(tokens);
+    assertEqual(nextToken(tokens)?.value, "[");
+    arraySize = nextToken(tokens)?.value;
     assertDefined(arraySize);
-    assertEqual(nextToken(tokens), "]");
-    assertEqual(nextToken(tokens), ";");
+    assertEqual(nextToken(tokens)?.value, "]");
+    assertEqual(nextToken(tokens)?.value, ";");
   }
   return { type, identifier, arraySize };
 }
 
-function parseStructBody(tokens: string[]) {
-  assertEqual(nextToken(tokens), "{");
+function parseStructBody(tokens: Token[]) {
+  assertEqual(nextToken(tokens)?.value, "{");
 
   const fields = [];
-  while (peekToken(tokens) !== "}") {
+  while (peekToken(tokens)?.value !== "}") {
     const field = parseField(tokens);
     fields.push(field);
   }
-  assertEqual(nextToken(tokens), "}");
+  assertEqual(nextToken(tokens)?.value, "}");
 
   return fields;
 }
 
-function nextToken(tokens: string[]) {
+function nextToken(tokens: Token[]) {
   return tokens.shift();
 }
 
-function peekToken(tokens: string[]) {
+function peekToken(tokens: Token[]) {
   return tokens.at(0);
 }
 
-export function parseStruct(tokens: string[]): ParsedStruct {
+export function parseStruct(tokens: Token[]): ParsedStruct {
   const type = nextToken(tokens);
-  assertEqual(type, "struct");
+  assertEqual(type?.value, "struct");
 
-  let identifier = nextToken(tokens);
+  let identifier = nextToken(tokens)?.value;
   assertDefined(identifier);
 
   const fields = parseStructBody(tokens);
-  assertEqual(nextToken(tokens), ";");
+  assertEqual(nextToken(tokens)?.value, ";");
 
   return { identifier, fields };
 }
 
-export function parseStructs(tokens: string[]) {
+export function parseStructs(tokens: Token[]) {
   const structs = [];
 
-  while (peekToken(tokens) === "struct") {
+  while (peekToken(tokens)?.value === "struct") {
     const struct = parseStruct(tokens);
     structs.push(struct);
   }

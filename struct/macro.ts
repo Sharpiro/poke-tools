@@ -1,59 +1,56 @@
-import { lexTokens, removeWhitespace } from "./lex.ts";
+import { lexTokens, removeWhitespace, Token } from "./lex.ts";
 import { assertDefined, assertEqual } from "./tools.ts";
 
-export function preProcess(source: string) {
-  const originalSource = source;
-  // let nextLine: string | undefined;
-  // while ((nextLine = getNextLine(source))) {
-  const constants = [];
-  while (source) {
-    const nextLine = getNextLine(source);
-    const nextLineTrim = removeWhitespace(nextLine);
-    // if (!nextLine) {
-    //   break;
-    // }
-
-    if (nextLineTrim.startsWith("#define")) {
-      let constant = parseDefineMacro(nextLine);
-      constants.push(constant);
+export function preProcess(
+  source: string,
+  tokens: Token[],
+  defineVariables: Map<string, { name: string; value: string }>,
+) {
+  const sourceChars = [...source].map((c) => c);
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    const defineVariable = defineVariables.get(token.value);
+    if (defineVariable) {
+      insertValue(sourceChars, token, defineVariable.value);
+    } else if (token.value === "#define") {
+      const { start, end, defineName, defineValue } = getDefineMacro(
+        tokens.slice(i),
+      );
+      defineVariables.set(defineName, { name: defineName, value: defineValue });
+      fillWhitespace(sourceChars, start, end);
+      i += 2;
     }
-    source = source.slice(nextLine.length + 1);
   }
-
-  let modifiedSource = originalSource;
-  for (const constant of constants) {
-    modifiedSource = originalSource.replaceAll(
-      constant.variableName,
-      constant.variableValue,
-    );
-  }
-
-  return modifiedSource;
+  const processedSource = sourceChars.join("");
+  return processedSource;
 }
 
-function parseDefineMacro(defineLine: string) {
-  const tokens = lexTokens(defineLine);
-  assertEqual(tokens.length, 3);
-  assertEqual(tokens[0], "#define");
-  const variableName = tokens.at(1);
-  assertDefined(variableName);
-  const variableValue = tokens.at(2);
-  assertDefined(variableValue);
-  return {
-    variableName,
-    variableValue,
-  };
-}
-
-function getNextLine(source: string) {
-  let end = 0;
-  for (let i = 0; i < source.length; i++) {
-    if (source[i] === "\n") {
-      break;
-    }
-    end++;
+function insertValue(data: string[], variableToken: Token, value: string) {
+  if (value.length > variableToken.value.length) {
+    throw new Error("not implemented");
   }
 
-  const line = source.slice(0, end);
-  return line;
+  let j = 0;
+  for (let i = variableToken.start; i < variableToken.end; i++) {
+    const replacement = value[j++] ?? " ";
+    data[i] = replacement;
+  }
+}
+
+function fillWhitespace(data: string[], start: number, end: number) {
+  for (let i = start; i < end; i++) {
+    data[i] = " ";
+  }
+}
+
+function getDefineMacro(tokens: Token[]) {
+  const start = tokens.at(0)?.start;
+  assertDefined(start);
+  const defineName = tokens.at(1)?.value;
+  assertDefined(defineName);
+  const defineValueToken = tokens.at(2);
+  assertDefined(defineValueToken);
+  const end = defineValueToken.end;
+
+  return { defineName, defineValue: defineValueToken.value, start, end };
 }

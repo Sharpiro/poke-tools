@@ -1,7 +1,8 @@
 import { lexTokens } from "./lex.ts";
 import { parseStruct, parseStructs } from "./parse.ts";
-import { analyzeStruct } from "./analyze.ts";
+import { AnalyzedStruct, analyzeStruct, analyzeStructs } from "./analyze.ts";
 import { getUnpackedStruct } from "./pack.ts";
+import { preProcess } from "./macro.ts";
 
 // export { analyzeStruct, lexTokens, parseStruct };
 
@@ -9,10 +10,16 @@ import { getUnpackedStruct } from "./pack.ts";
 // export { parseStruct, parseStructs } from "./parse.ts";
 // export { analyzeStruct, analyzeStructs } from "./analyze.ts";
 
-export function doAll(source: string, buffer: Uint8Array) {
-  const tokens = lexTokens(source);
-  const parsedStruct = parseStruct(tokens);
-  const analyzedStruct = analyzeStruct(parsedStruct, new Map(), new Map());
+export function getStructs(source: string, buffer: Uint8Array) {
+  const preTokens = lexTokens(source);
+  const processedSource = preProcess(source, preTokens, new Map());
+  const tokens = lexTokens(processedSource);
+  const parsedStructs = parseStructs(tokens);
+  const analyzedStructs = analyzeStructs(parsedStructs, new Map());
+  return analyzedStructs;
+}
+
+export function unpack(analyzedStruct: AnalyzedStruct, buffer: Uint8Array) {
   const unpackedStruct = getUnpackedStruct(analyzedStruct, buffer);
   return unpackedStruct;
 }

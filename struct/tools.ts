@@ -4,7 +4,7 @@ export function assertDefined(condition: any): asserts condition {
   }
 }
 
-export function assertEqual(actual: any, expected: any): asserts actual {
+export function assertEqual<T>(actual: T, expected: T): asserts actual {
   if (actual !== expected) {
     throw new Error(`'${actual}' !== '${expected}'`);
   }

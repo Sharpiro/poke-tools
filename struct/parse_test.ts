@@ -99,23 +99,3 @@ struct Temp
   const tokens = lexTokens(structsRaw);
   console.log(tokens);
 });
-
-Deno.test("define macro", () => {
-  // const source = `#define ARRAY_SIZE 9`;
-  const source = `
-  #define ARRAY_SIZE 9
-  // #define FAV_NUMBER 8
-
-  struct Temp
-  {
-    // bool a;
-    // int a;
-    bool a[ARRAY_SIZE];
-  };
-  `;
-
-  const macroSource = preProcess(source);
-  console.log(macroSource);
-  // const tokens = lexTokens(macroSource);
-  // console.log(tokens);
-});

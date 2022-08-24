@@ -248,3 +248,38 @@ struct Owner
   assertEquals(ownerUnpacked.temp.c, 0x0f_0a_0f_0a);
   assertEquals(ownerUnpacked.d, 0x0e_0f);
 });
+
+Deno.test("array of structs", () => {
+  const structRaw = `
+struct Temp
+{
+  u8 a;
+  u8 b;
+};
+
+struct Owner
+{
+  Temp temp[2];
+};`;
+
+  const tokens = lexTokens(structRaw);
+  const parsedStruct = parseStructs(tokens);
+  const analyzedStructs = analyzeStructs(
+    parsedStruct,
+    new Map(),
+  );
+  console.log(analyzedStructs);
+  const ownerUnpacked = getUnpackedStruct(
+    analyzedStructs[1],
+    // deno-fmt-ignore
+    new Uint8Array([
+      0xa, 0xb,
+      0xc, 0xd
+    ]),
+  );
+  console.log(ownerUnpacked);
+  // assertEquals(ownerUnpacked.a, 0xa);
+  // assertEquals(ownerUnpacked.temp.b, 0xb);
+  // assertEquals(ownerUnpacked.temp.c, 0x0f_0a_0f_0a);
+  // assertEquals(ownerUnpacked.d, 0x0e_0f);
+});

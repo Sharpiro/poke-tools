@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { doAll } from "./lib/struct";
+import { getStructs, unpack } from "./lib/struct";
 
 // const testStruct = `struct Temp
 // {
@@ -15,17 +15,16 @@ const testStruct = `
 // #define ALL_SECTOR_COUNT SECTOR_COUNT * 2
 // #define ALL_SECTOR_COUNT 32
 // #define SAVE_SLOT_SECTOR_COUNT 14
-// #define SECTOR_DATA_SIZE 3968
+#define SECTOR_DATA_SIZE 3968
 // #define SECTOR_FOOTER_SIZE 128
 // #define SECTOR_UNUSED SECTOR_FOOTER_SIZE - 12
+#define SECTOR_UNUSED 116
 // #define SECTOR_SIZE 4096
 
 struct Sector
 {
-  // u8 data[SECTOR_DATA_SIZE];
-  // u8 unused[SECTOR_UNUSED];
-  u8 data[1];
-  u8 unused[2];
+  u8 data[SECTOR_DATA_SIZE];
+  u8 unused[SECTOR_UNUSED];
   u16 id;
   u16 checksum;
   u32 signature;
@@ -90,9 +89,12 @@ function App() {
               parseInt(bt, 16)
             );
             const buffer = new Uint8Array(bufferNumbers);
-            const result = doAll(source, buffer);
-            console.log(bufferNumbers);
-            console.log(JSON.stringify(result, null, 2));
+            const structs = getStructs(source);
+            console.log("buffer:", bufferNumbers);
+            // console.log(JSON.stringify(result, null, 2));
+            console.log("structs:", structs);
+            const unpacked = unpack(structs[1], buffer);
+            console.log("unpacked:", unpacked);
           }}
         >
           Debug

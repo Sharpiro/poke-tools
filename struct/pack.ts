@@ -15,18 +15,27 @@ export function getUnpackedStruct(
         ctx.index += byteSize;
         obj[field.identifier] = num;
       } else {
-        let numArray = [];
+        let array = [];
         for (let i = 0; i < field.arraySize; i++) {
           const slice = buffer.slice(ctx.index, ctx.index + byteSize);
           const num = toNumberLE(slice);
-          numArray.push(num);
+          array.push(num);
           ctx.index += byteSize;
         }
-        obj[field.identifier] = numArray;
+        obj[field.identifier] = array;
       }
     } else {
-      const objField = getUnpackedStruct(field.type, buffer, ctx);
-      obj[field.identifier] = objField;
+      if (field.arraySize === undefined) {
+        const objField = getUnpackedStruct(field.type, buffer, ctx);
+        obj[field.identifier] = objField;
+      } else {
+        let array = [];
+        for (let i = 0; i < field.arraySize; i++) {
+          const objField = getUnpackedStruct(field.type, buffer, ctx);
+          array.push(objField);
+        }
+        obj[field.identifier] = array;
+      }
     }
   }
   return obj;

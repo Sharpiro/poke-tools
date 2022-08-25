@@ -22,7 +22,7 @@ export function getUnpackedStruct(
           array.push(num);
           ctx.index += byteSize;
         }
-        obj[field.identifier] = array;
+        obj[field.identifier] = new Uint8Array(array);
       }
     } else {
       if (field.arraySize === undefined) {
